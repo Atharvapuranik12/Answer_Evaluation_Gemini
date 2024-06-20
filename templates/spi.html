@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Evaluation Results</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        .results {
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Evaluation Results</h1>
+
+    <div class="results">
+        <p><strong>Final Score:</strong> <span id="final-score"></span></p>
+        <p><strong>Grade:</strong> <span id="grade"></span></p>
+        <p><strong>Sentiment:</strong> <span id="sentiment"></span></p>
+    </div>
+
+    <canvas id="spider-chart" width="400" height="400"></canvas>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            fetch('/evaluate', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    question: "Sample question",  // Replace with actual question
+                    answer: "Sample answer"  // Replace with actual answer
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                var chartLabels = Object.keys(data.breakdown);
+                var chartData = Object.values(data.breakdown);
+                var finalScore = data.final_score.toFixed(2);
+                var grade = data.grade;
+                var sentiment = data.sentiment.toFixed(2);
+
+                // Display evaluation results
+                document.getElementById('final-score').textContent = finalScore;
+                document.getElementById('grade').textContent = grade;
+                document.getElementById('sentiment').textContent = sentiment;
+
+                // Draw spider chart
+                var ctx = document.getElementById('spider-chart').getContext('2d');
+                var myChart = new Chart(ctx, {
+                    type: 'radar',
+                    data: {
+                        labels: chartLabels,
+                        datasets: [{
+                            label: 'Evaluation Breakdown',
+                            data: chartData,
+                            backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                            borderColor: 'rgba(255, 99, 132, 1)',
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        scale: {
+                            ticks: {
+                                beginAtZero: true,
+                                max: 100
+                            }
+                        }
+                    }
+                });
+            })
+            .catch(error => console.error('Error:', error));
+        });
+    </script>
+</body>
+</html>
