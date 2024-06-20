@@ -136,7 +136,7 @@ Candidate's Response: "{answer}"
 
 @app.route('/')
 def index():
-    return render_template('index1.html')
+    return render_template('spi.html')
 
 if __name__ == '__main__':
     app.run(debug=True)
