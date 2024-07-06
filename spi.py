@@ -3,11 +3,12 @@ import re
 from textblob import TextBlob
 import google.generativeai as genai
 from dotenv import load_dotenv
+from flask_cors import CORS
 import os
 
 app = Flask(__name__)
 load_dotenv()
-
+CORS(app, origins=["https://app.rework.club"])
 # Define the rubric with corrected weights
 rubric = {
     "Excellent": {
