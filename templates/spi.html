@@ -1,102 +1,66 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Answer Evaluation</title>
-    <style>
-        /* Loader CSS */
-        .loader {
-            border: 16px solid #f3f3f3;
-            border-radius: 50%;
-            border-top: 16px solid #ffb6c1; /* Baby pink color */
-            border-right: 16px solid #ffe4e1; /* Light baby pink color */
-            border-bottom: 16px solid #ffb6c1; /* Baby pink color */
-            border-left: 16px solid #ffe4e1; /* Light baby pink color */
-            width: 120px;
-            height: 120px;
-            animation: spin 2s linear infinite;
-            display: none;
-            margin: 20px auto;
-        }
-
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-
-        /* Donut chart CSS */
-        #evaluationChart {
-            width: 14cm;
-            height: 14cm;
-            display: none;
-            margin: 20px auto;
-        }
-    </style>
+    <title>SPI</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
-    <h1>Answer Evaluation</h1>
-    <form id="evaluation-form">
+    <h1>SPI</h1>
+    <form id="evaluationForm">
         <label for="question">Question:</label><br>
-        <input type="text" id="question" name="question" required><br><br>
+        <input type="text" id="question" name="question"><br>
         <label for="answer">Answer:</label><br>
-        <textarea id="answer" name="answer" required></textarea><br><br>
-        <button type="submit">Evaluate</button>
+        <textarea id="answer" name="answer"></textarea><br><br>
+        <input type="submit" value="Submit">
     </form>
 
-    <div id="loader" class="loader"></div>
-    <div id="evaluation-result"></div>
-    <canvas id="evaluationChart"></canvas>
+    <canvas id="donutChart" width="400" height="400"></canvas>
 
     <script>
-        document.getElementById('evaluation-form').addEventListener('submit', function(e) {
-            e.preventDefault();
-            const formData = new FormData(this);
-            const data = {
-                question: formData.get('question'),
-                answer: formData.get('answer')
-            };
-
-            // Show the loader
-            document.getElementById('loader').style.display = 'block';
+        document.getElementById('evaluationForm').addEventListener('submit', function (event) {
+            event.preventDefault();
+            const question = document.getElementById('question').value;
+            const answer = document.getElementById('answer').value;
 
             fetch('/evaluate', {
                 method: 'POST',
                 headers: {
-                    'Content-Type': 'application/json'
+                    'Content-Type': 'application/json',
                 },
-                body: JSON.stringify(data)
+                body: JSON.stringify({ question, answer }),
             })
             .then(response => response.json())
-            .then(result => {
-                const { final_score, grade, breakdown, sentiment } = result;
-                const sentimentInterpretation = sentiment === -1 ? 'strong negative' : sentiment === 0 ? 'neutral' : 'strong positive';
-                document.getElementById('evaluation-result').innerHTML = `
-                    <h2>Evaluation Result</h2>
-                    <p>Final Score: ${final_score.toFixed(2)}</p>
-                    <p>Grade: ${grade}</p>
-                    <h3>Breakdown:</h3>
-                    <ul>
-                        ${Object.entries(breakdown).map(([criterion, score]) => `<li>${criterion}: ${score.toFixed(2)}</li>`).join('')}
-                    </ul>
-                    <p>Sentiment: ${sentiment.toFixed(2)} (${sentimentInterpretation})</p>
-                `;
-                // Hide the loader
-                document.getElementById('loader').style.display = 'none';
-
-                // Show and populate the donut chart
-                document.getElementById('evaluationChart').style.display = 'block';
-                const ctx = document.getElementById('evaluationChart').getContext('2d');
+            .then(data => {
+                const ctx = document.getElementById('donutChart').getContext('2d');
                 new Chart(ctx, {
                     type: 'doughnut',
                     data: {
-                        labels: Object.keys(breakdown),
+                        labels: Object.keys(data.breakdown),
                         datasets: [{
-                            data: Object.values(breakdown),
+                            data: data.criteria_scores,
                             backgroundColor: [
-                                '#ff9999', '#66b3ff', '#99ff99', '#ffcc99', '#c2c2f0'
-                            ]
+                                'rgba(255, 99, 132, 0.2)',
+                                'rgba(54, 162, 235, 0.2)',
+                                'rgba(255, 206, 86, 0.2)',
+                                'rgba(75, 192, 192, 0.2)',
+                                'rgba(153, 102, 255, 0.2)',
+                                'rgba(255, 159, 64, 0.2)',
+                                'rgba(255, 99, 132, 0.2)',
+                                'rgba(54, 162, 235, 0.2)',
+                                'rgba(255, 206, 86, 0.2)'
+                            ],
+                            borderColor: [
+                                'rgba(255, 99, 132, 1)',
+                                'rgba(54, 162, 235, 1)',
+                                'rgba(255, 206, 86, 1)',
+                                'rgba(75, 192, 192, 1)',
+                                'rgba(153, 102, 255, 1)',
+                                'rgba(255, 159, 64, 1)',
+                                'rgba(255, 99, 132, 1)',
+                                'rgba(54, 162, 235, 1)',
+                                'rgba(255, 206, 86, 1)'
+                            ],
+                            borderWidth: 1
                         }]
                     },
                     options: {
@@ -107,16 +71,11 @@
                             },
                             title: {
                                 display: true,
-                                text: 'Evaluation Breakdown'
+                                text: 'Evaluation Criteria Scores'
                             }
                         }
                     }
                 });
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                // Hide the loader in case of error
-                document.getElementById('loader').style.display = 'none';
             });
         });
     </script>
