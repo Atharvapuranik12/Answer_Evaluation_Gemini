@@ -133,6 +133,7 @@ Candidate's Response: "{answer}"
         "grade": grade,
         "breakdown": breakdown_percentage,
         "sentiment": sentiment
+        "criteria_scores": list(breakdown_percentage.values())
     })
 
 @app.route('/')
