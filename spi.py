@@ -8,8 +8,8 @@ import os
 
 app = Flask(__name__)
 load_dotenv()
-CORS(app, origins=["https://app.rework.club"])
-# Define the rubric with corrected weights
+CORS(app, origins=["*"])
+
 rubric = {
     "Excellent": {
         "min_score": 90,
